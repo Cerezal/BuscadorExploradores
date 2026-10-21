@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#121812">
+  <title>Scout Tracker Global</title>
+
+  <!-- PWA meta tags para Android / iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ScoutWorld">
+
+  <link rel="manifest" href='data:application/manifest+json;utf8,{"name":"Scout Tracker Global","short_name":"ScoutWorld","start_url":".?action=autorun","display":"standalone","background_color":"#121812","theme_color":"#121812","icons":[{"src":"https://img.icons8.com/color/192/compass--v1.png","sizes":"192x192","type":"image/png"}]}'>
+
+  <style>
+    :root {
+      --bg: #101510;
+      --card: #182218;
+      --card-hover: #213021;
+      --accent: #2e7d32;
+      --accent-hover: #388e3c;
+      --text: #e8f5e9;
+      --subtext: #81c784;
+      --border: #283a28;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 14px; min-height: 100vh; }
+    
+    header { text-align: center; margin-bottom: 12px; }
+    h1 { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    p.desc { font-size: 0.75rem; color: var(--subtext); }
+
+    .sticky-panel {
+      position: sticky;
+      top: 8px;
+      z-index: 100;
+      background: rgba(24, 34, 24, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    label { font-size: 0.7rem; text-transform: uppercase; color: var(--subtext); font-weight: bold; display: block; margin-bottom: 4px; }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      background: #0a0e0a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      color: #fff;
+    }
+    .btn-main { background: var(--accent); }
+    .btn-main:active { background: var(--accent-hover); }
+    .btn-sec { background: #1f301f; border: 1px solid var(--border); color: var(--subtext); }
+    .btn-sec:active { background: #283d28; }
+
+    .category-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--subtext);
+      margin: 14px 0 6px 2px;
+      font-weight: 700;
+      border-left: 3px solid var(--accent);
+      padding-left: 6px;
+    }
+
+    .platform-list { display: flex; flex-direction: column; gap: 5px; }
+    .platform-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .platform-item:active { background: var(--card-hover); }
+    .platform-name { font-weight: 600; font-size: 0.85rem; }
+    .platform-cat { font-size: 0.7rem; color: var(--subtext); }
+    .launch-icon { font-size: 0.85rem; color: var(--subtext); }
+
+    .dork-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; margin-bottom: 20px; }
+    .dork-btn {
+      background: #151e15;
+      border: 1px solid var(--border);
+      color: var(--subtext);
+      text-align: center;
+      padding: 8px 6px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.75rem;
+      display: block;
+    }
+    .status-msg {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #a5d6a7;
+      margin-top: 4px;
+      min-height: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Scout Tracker Global</h1>
+    <p class="desc">Rastreo de Subastas, Archivos y Mercados Mundiales</p>
+  </header>
+
+  <div class="sticky-panel">
+    <label for="termInput">Término de búsqueda activo:</label>
+    <input type="text" id="termInput" value='"Exploradores de España"'>
+    
+    <div class="action-row">
+      <button class="btn btn-main" onclick="launchBatch('priority')">⚡ Bloque Prioritario</button>
+      <button class="btn btn-sec" onclick="launchBatch('auctions')">🏛️ Subastas Mundiales</button>
+    </div>
+    <div id="status" class="status-msg"></div>
+  </div>
+
+  <!-- 1. Agregadores Globales de Subastas (América, Europa y Oceanía) -->
+  <div class="category-title">Agregadores Globales de Subastas</div>
+  <div class="platform-list">
+    <a href="#" class="platform-item" onclick="openDirect(event, 'invaluable')">
+      <div>
+        <div class="platform-name">Invaluable (Global)</div>
+        <div class="platform-cat">EE. UU., Reino Unido, Europa y Australia</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'liveauctioneers')">
+      <div>
+        <div class="platform-name">LiveAuctioneers</div>
+        <div class="platform-cat">Mayor red de casas de subastas en América y UK</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'barnebys')">
+      <div>
+        <div class="platform-name">Barnebys (Global)</div>
+        <div class="platform-cat">Metabuscador internacional de subastas de arte y antigüedades</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'thesaleroom')">
+      <div>
+        <div class="platform-name">The Saleroom</div>
+        <div class="platform-cat">Reino Unido & Europa (Militaria y Memorabilia histórica)</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'drouot')">
+      <div>
+        <div class="platform-name">Drouot Digital</div>
+        <div class="platform-cat">Francia e internacional (Casas de subastas de París y regiones)</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'lottissimo')">
+      <div>
+        <div class="platform-name">Lot-tissimo</div>
+        <div class="platform-cat">Alemania, Austria, Suiza y Países Bajos</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'bidspirit')">
+      <div>
+        <div class="platform-name">Bidspirit</div>
+        <div class="platform-cat">Casas numismáticas, militaria y subastas en Europa del Este y España</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+  </div>
+
+  <!-- 2. Marketplaces de Coleccionismo y Venta Directa Mundial -->
+  <div class="category-title">Marketplaces Mundiales & Segunda Mano</div>
+  <div class="platform-list">
+    <a href="#" class="platform-item" onclick="openDirect(event, 'todocoleccion')">
+      <div>
+        <div class="platform-name">Todocoleccion</div>
+        <div class="platform-cat">Mercado principal en España (Militaria, papel, postales)</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'delcampe')">
+      <div>
+        <div class="platform-name">Delcampe</div>
+        <div class="platform-cat">Plataforma líder europea de filatelia, insignias y documentos</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'ebay_global')">
+      <div>
+        <div class="platform-name">eBay Global (.com)</div>
+        <div class="platform-cat">Rastreo internacional en todo el mundo</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'mercadolibre')">
+      <div>
+        <div class="platform-name">Mercado Libre (Latinoamérica)</div>
+        <div class="platform-cat">Rastreo en México, Argentina y conosur (vía Google)</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'yahoo_jp')">
+      <div>
+        <div class="platform-name">Yahoo! Japan Auctions</div>
+        <div class="platform-cat">Japón y Asia (Jamborees y material asiático)</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+  </div>
+
+  <!-- 3. Bibliofilia, Documentos y Fondos Antiguos Mundiales -->
+  <div class="category-title">Bibliofilia & Archivos Documentales Mundiales</div>
+  <div class="platform-list">
+    <a href="#" class="platform-item" onclick="openDirect(event, 'vialibri')">
+      <div>
+        <div class="platform-name">ViaLibri</div>
+        <div class="platform-cat">Metabuscador mundial de anticuarios (Abebooks, Biblio, ILAB)</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'abebooks')">
+      <div>
+        <div class="platform-name">AbeBooks / IberLibro Global</div>
+        <div class="platform-cat">Catálogo mundial de librerías anticuarias</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'worldcat')">
+      <div>
+        <div class="platform-name">WorldCat</div>
+        <div class="platform-cat">Catálogo de 10.000 bibliotecas y archivos históricos del mundo</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+    <a href="#" class="platform-item" onclick="openDirect(event, 'archive_org')">
+      <div>
+        <div class="platform-name">Internet Archive</div>
+        <div class="platform-cat">Publicaciones, memorias y revistas de época digitalizadas</div>
+      </div>
+      <span class="launch-icon">↗</span>
+    </a>
+  </div>
+
+  <!-- 4. Motores de Búsqueda Web Globales y Dorks Especializados -->
+  <div class="category-title">Motores Globales & Dorks Avanzados</div>
+  <div class="dork-grid">
+    <a href="#" class="dork-btn" onclick="openGlobalEngine(event, 'google')">🌐 Google Global</a>
+    <a href="#" class="dork-btn" onclick="openGlobalEngine(event, 'duckduckgo')">🦆 DuckDuckGo</a>
+    <a href="#" class="dork-btn" onclick="openDork(event, 'pdf')">📄 Catálogos PDF</a>
+    <a href="#" class="dork-btn" onclick="openDork(event, 'auctions_multi')">🏛️ Dork Subastas Multi</a>
+    <a href="#" class="dork-btn" onclick="openDork(event, 'forums')">💬 Foros Militaria</a>
+    <a href="#" class="dork-btn" onclick="openDork(event, 'latinamerica')">🌎 Portales LATAM</a>
+  </div>
+
+  <script>
+    const engines = {
+      // Subastas Globales
+      invaluable: (q) => `https://www.invaluable.com/search?keyword=${encodeURIComponent(q)}`,
+      liveauctioneers: (q) => `https://www.liveauctioneers.com/search/?keyword=${encodeURIComponent(q)}`,
+      barnebys: (q) => `https://www.barnebys.com/search?q=${encodeURIComponent(q)}`,
+      thesaleroom: (q) => `https://www.the-saleroom.com/en-gb/search-results?searchTerm=${encodeURIComponent(q)}`,
+      drouot: (q) => `https://drouot.com/es/l?query=${encodeURIComponent(q)}`,
+      lottissimo: (q) => `https://www.lot-tissimo.com/de-de/search-results?searchTerm=${encodeURIComponent(q)}`,
+      bidspirit: (q) => `https://es.bidspirit.com/ui/search?keywords=${encodeURIComponent(q)}`,
+
+      // Marketplaces Mundiales
+      todocoleccion: (q) => `https://www.todocoleccion.net/buscador?bu=${encodeURIComponent(q)}`,
+      delcampe: (q) => `https://www.delcampe.net/en_GB/collectables/search?term=${encodeURIComponent(q)}`,
+      ebay_global: (q) => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sacat=0&LH_PrefLoc=2`,
+      mercadolibre: (q) => `https://www.google.com/search?q=${encodeURIComponent('site:mercadolibre.com.* OR site:mercadolivre.com.br ' + q)}`,
+      yahoo_jp: (q) => `https://auctions.yahoo.co.jp/search/search?p=${encodeURIComponent(q)}`,
+
+      // Bibliofilia y Archivos
+      vialibri: (q) => `https://www.vialibri.net/searches?all_text=${encodeURIComponent(q)}`,
+      abebooks: (q) => `https://www.abebooks.com/servlet/SearchResults?kn=${encodeURIComponent(q)}`,
+      worldcat: (q) => `https://search.worldcat.org/search?q=${encodeURIComponent(q)}`,
+      archive_org: (q) => `https://archive.org/search?query=${encodeURIComponent(q)}`
+    };
+
+    function getTerm() {
+      return document.getElementById('termInput').value.trim() || '"Exploradores de España"';
+    }
+
+    function openDirect(e, target) {
+      e.preventDefault();
+      const q = getTerm();
+      if (engines[target]) {
+        window.open(engines[target](q), '_blank');
+      }
+    }
+
+    function openGlobalEngine(e, engine) {
+      e.preventDefault();
+      const q = getTerm();
+      if (engine === 'google') {
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}&gl=us&pws=0`, '_blank');
+      } else if (engine === 'duckduckgo') {
+        window.open(`https://duckduckgo.com/?q=${encodeURIComponent(q)}&kl=wt-wt`, '_blank');
+      }
+    }
+
+    function openDork(e, type) {
+      e.preventDefault();
+      const q = getTerm();
+      let query = '';
+      
+      switch(type) {
+        case 'pdf':
+          query = `filetype:pdf (${q}) (subasta OR catálogo OR auction OR catalog OR remate)`;
+          break;
+        case 'auctions_multi':
+          query = `(site:invaluable.com OR site:liveauctioneers.com OR site:the-saleroom.com OR site:drouot.com OR site:barnebys.com) (${q})`;
+          break;
+        case 'forums':
+          query = `(${q}) (militaria OR insignia OR hebilla OR uniforme) (foro OR forum OR board OR viewtopic)`;
+          break;
+        case 'latinamerica':
+          query = `(${q}) (site:.ar OR site:.mx OR site:.cl OR site:.uy) (antigüedades OR subasta OR coleccionismo)`;
+          break;
+      }
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+    }
+
+    function launchBatch(group) {
+      const q = getTerm();
+      const status = document.getElementById('status');
+      
+      let targets = [];
+      if (group === 'priority') {
+        status.innerText = "Abriendo mercados principales...";
+        targets = ['todocoleccion', 'delcampe', 'ebay_global', 'barnebys', 'vialibri'];
+      } else if (group === 'auctions') {
+        status.innerText = "Abriendo agregadores de subastas...";
+        targets = ['invaluable', 'liveauctioneers', 'thesaleroom', 'drouot', 'bidspirit'];
+      }
+
+      targets.forEach((key, index) => {
+        setTimeout(() => {
+          window.open(engines[key](q), '_blank');
+        }, index * 260);
+      });
+
+      setTimeout(() => {
+        status.innerText = "Bloque de pestañas completado.";
+      }, targets.length * 260 + 300);
+    }
+
+    // Auto-ejecución al pulsar el acceso directo de pantalla de inicio
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('action') === 'autorun') {
+        setTimeout(() => {
+          launchBatch('priority');
+        }, 600);
+      }
+    });
+  </script>
+</body>
+</html>
+  
